@@ -3,6 +3,9 @@
 
 ![Research Problems](https://img.shields.io/badge/Research_Problems-50-blue) ![Algorithmic Problems](https://img.shields.io/badge/Algorithmic_Problems-107-green)
 
+<p align="center">
+  <img src="assets/teaser.png" alt="Frontier-CS Teaser" width="2000"/>
+</p>
 
 **Frontier-CS** is a dataset for evaluating frontier models on challenging computer science problems. From optimizing GPU kernels to solving competitive programming challenges.
 
