@@ -112,6 +112,7 @@ class FrontierCSEvaluator:
         *,
         backend: Optional[BackendType] = None,
         timeout: Optional[int] = None,
+        unbounded: bool = False,
     ) -> EvaluationResult:
         """
         Evaluate a solution for a single problem.
@@ -122,11 +123,15 @@ class FrontierCSEvaluator:
             code: Solution code (C++ for algorithmic, Python for research)
             backend: Backend to use ("docker" or "skypilot"), defaults to init value
             timeout: Optional timeout in seconds
+            unbounded: For algorithmic problems, use unbounded score (no clipping)
 
         Returns:
             EvaluationResult with score and status
         """
         runner = self._get_runner(track, backend)
+        # Pass unbounded to runner if it's algorithmic
+        if track == "algorithmic" and hasattr(runner, 'evaluate'):
+            return runner.evaluate(str(problem_id), code, timeout=timeout, unbounded=unbounded)
         return runner.evaluate(str(problem_id), code, timeout=timeout)
 
     def evaluate_file(

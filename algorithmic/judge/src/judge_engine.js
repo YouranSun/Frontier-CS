@@ -245,14 +245,19 @@ export class JudgeEngine {
 
             // Run all cases
             let totalScore = 0;
+            let totalScoreUnbounded = 0;
             const caseResults = [];
             for (const c of problem.cases) {
                 const r = await this.judgeCase({ runSpec, caseItem: c, problem, checkerId });
                 
-                const match = r.msg.match(/Ratio: (\d\.\d+)/);
-                r.scoreRatio = match ? parseFloat(match[1]) : (r.ok ? 1.0 : 0);
+                const matchBounded = r.msg.match(/Ratio: ([\d.]+)/);
+                const matchUnbounded = r.msg.match(/RatioUnbounded: ([\d.]+)/);
+                
+                r.scoreRatio = matchBounded ? parseFloat(matchBounded[1]) : (r.ok ? 1.0 : 0);
+                r.scoreRatioUnbounded = matchUnbounded ? parseFloat(matchUnbounded[1]) : r.scoreRatio;
                 
                 totalScore += r.scoreRatio;
+                totalScoreUnbounded += r.scoreRatioUnbounded;
                 caseResults.push(r);
             }
             
@@ -260,6 +265,7 @@ export class JudgeEngine {
             const passed = caseResults.every(r => r.scoreRatio === 1.0);
             const overallResult = passed ? 'Correct Answer' : 'Wrong Answer';
             const finalScore = problem.cases.length > 0 ? (totalScore / problem.cases.length) * 100 : 0;
+            const finalScoreUnbounded = problem.cases.length > 0 ? (totalScoreUnbounded / problem.cases.length) * 100 : 0;
 
             // Remap individual case statuses based on scoreRatio
             const finalCases = caseResults.map(caseResult => ({
@@ -267,7 +273,14 @@ export class JudgeEngine {
                 status: caseResult.scoreRatio === 1.0 ? 'Correct' : 'Wrong Answer'
             }));
 
-            const final = { status: 'done', passed, result: overallResult, score: finalScore, cases: finalCases };
+            const final = { 
+                status: 'done', 
+                passed, 
+                result: overallResult, 
+                score: finalScore, 
+                scoreUnbounded: finalScoreUnbounded,
+                cases: finalCases 
+            };
             this.results.set(sid, final);
             await fs.writeFile(path.join(subDir, 'result.json'), JSON.stringify(final, null, 2));
         } catch (e) {
@@ -300,21 +313,27 @@ export class JudgeEngine {
 
             // Run all cases and calculate score
             let totalScore = 0;
+            let totalScoreUnbounded = 0;
             const caseResults = [];
             for (const c of problem.cases) {
                 const r = await this.judgeInteractiveCase({ runSpec, caseItem: c, problem, interactorId });
                 
                 // Parse score ratio from interactor message
-                const match = r.msg.match(/Ratio: (\d\.\d+)/);
-                r.scoreRatio = match ? parseFloat(match[1]) : (r.ok ? 1.0 : 0);
+                const matchBounded = r.msg.match(/Ratio: ([\d.]+)/);
+                const matchUnbounded = r.msg.match(/RatioUnbounded: ([\d.]+)/);
+                
+                r.scoreRatio = matchBounded ? parseFloat(matchBounded[1]) : (r.ok ? 1.0 : 0);
+                r.scoreRatioUnbounded = matchUnbounded ? parseFloat(matchUnbounded[1]) : r.scoreRatio;
                 
                 totalScore += r.scoreRatio;
+                totalScoreUnbounded += r.scoreRatioUnbounded;
                 caseResults.push(r);
             }
 
             const passed = caseResults.every(r => r.scoreRatio === 1.0);
             const overallResult = passed ? 'Correct Answer' : 'Wrong Answer';
             const finalScore = problem.cases.length > 0 ? (totalScore / problem.cases.length) * 100 : 0;
+            const finalScoreUnbounded = problem.cases.length > 0 ? (totalScoreUnbounded / problem.cases.length) * 100 : 0;
 
             // Remap individual case statuses for clarity
             const finalCases = caseResults.map(caseResult => ({
@@ -322,7 +341,14 @@ export class JudgeEngine {
                 status: caseResult.scoreRatio === 1.0 ? 'Correct' : 'Wrong Answer'
             }));
 
-            const final = { status: 'done', passed, result: overallResult, score: finalScore, cases: finalCases };
+            const final = { 
+                status: 'done', 
+                passed, 
+                result: overallResult, 
+                score: finalScore, 
+                scoreUnbounded: finalScoreUnbounded,
+                cases: finalCases 
+            };
             this.results.set(sid, final);
             await fs.writeFile(path.join(subDir, 'result.json'), JSON.stringify(final, null, 2));
         } catch (e) {

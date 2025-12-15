@@ -37,6 +37,7 @@ class AlgorithmicRunner(Runner):
         *,
         timeout: Optional[int] = None,
         lang: str = "cpp",
+        unbounded: bool = False,
     ) -> EvaluationResult:
         """
         Evaluate a solution for an algorithmic problem.
@@ -46,6 +47,7 @@ class AlgorithmicRunner(Runner):
             solution_code: C++ solution code
             timeout: Optional timeout in seconds
             lang: Programming language (default: cpp)
+            unbounded: If True, use unbounded score (without clipping)
 
         Returns:
             EvaluationResult with score and status
@@ -84,13 +86,23 @@ class AlgorithmicRunner(Runner):
                 duration_seconds=duration,
             )
 
-        return EvaluationResult(
+        # Use unbounded score if requested and available
+        score = result.get("scoreUnbounded" if unbounded else "score", 0.0)
+        
+        # Create result with both scores if available
+        eval_result = EvaluationResult(
             problem_id=pid,
-            score=result.get("score", 0.0),
+            score=score,
             status=EvaluationStatus.SUCCESS,
             duration_seconds=duration,
             metadata=result,
         )
+        
+        # Add unbounded score as attribute if available
+        if "scoreUnbounded" in result:
+            eval_result.score_unbounded = result["scoreUnbounded"]
+        
+        return eval_result
 
     def evaluate_file(
         self,

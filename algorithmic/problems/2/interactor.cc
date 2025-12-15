@@ -87,8 +87,9 @@ int main(int argc, char* argv[]) {
 
                 double score_ratio = your_value / best_value;
                 score_ratio = std::max(0.0, std::min(1.0, score_ratio)); // Clamp
+                double unbounded_score_ratio = your_value / best_value; // No clamping for unbounded score
                 
-                quitp(score_ratio, "Correct guess in %lld queries. Ratio: %.4f", your_queries, score_ratio);
+                quitp(score_ratio, "Correct guess in %lld queries. Ratio: %.4f, RatioUnbounded: %.4f", your_queries, score_ratio, unbounded_score_ratio);
             } else {
                 quitp(0.0, "Wrong guess. Ratio: 0.0000");
             }

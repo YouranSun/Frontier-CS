@@ -62,6 +62,35 @@ Results saved to `scripts/solutions/`:
 | `GET /result/{sid}` | Get submission result |
 
 
+### Python API
+
+```python
+from frontier_cs import FrontierCSEvaluator
+
+evaluator = FrontierCSEvaluator()
+
+# Evaluate an algorithmic problem
+result = evaluator.evaluate("algorithmic", problem_id=1, code=cpp_code)
+print(f"Score: {result.score}")
+
+# Get unbounded score (without clipping)
+result = evaluator.evaluate("algorithmic", problem_id=1, code=cpp_code, unbounded=True)
+print(f"Score (bounded): {result.score}")
+if hasattr(result, 'score_unbounded'):
+    print(f"Score (unbounded): {result.score_unbounded}")
+```
+
+### CLI
+
+```bash
+# Evaluate a solution
+frontier-eval --algorithmic 1 solution.cpp
+
+# Get unbounded score
+frontier-eval --algorithmic 1 solution.cpp --unbounded
+```
+
+
 ### Customized Problems
 
 1. Create `problems/{id}/` directory

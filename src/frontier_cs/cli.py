@@ -144,6 +144,11 @@ Examples:
         type=str,
         help="Solution code as string (alternative to file)",
     )
+    eval_group.add_argument(
+        "--unbounded",
+        action="store_true",
+        help="Use unbounded score (for algorithmic problems, shows score without clipping)",
+    )
 
     # Output options
     output_group = parser.add_argument_group("Output Options")
@@ -290,11 +295,12 @@ Pairs file format (solution:problem per line):
     return parser
 
 
-def print_result(result: EvaluationResult, quiet: bool = False, verbose: bool = False) -> None:
+def print_result(result: EvaluationResult, quiet: bool = False, verbose: bool = False, unbounded: bool = False) -> None:
     """Print evaluation result."""
     if quiet:
         if result.success:
-            print(f"{result.problem_id}: {result.score}")
+            score = result.score_unbounded if unbounded and hasattr(result, 'score_unbounded') else result.score
+            print(f"{result.problem_id}: {score}")
         else:
             print(f"{result.problem_id}: ERROR")
         return
@@ -304,7 +310,11 @@ def print_result(result: EvaluationResult, quiet: bool = False, verbose: bool = 
     print(f"Status: {result.status.value}")
 
     if result.success:
-        print(f"Score: {result.score}")
+        if unbounded and hasattr(result, 'score_unbounded'):
+            print(f"Score (unbounded): {result.score_unbounded}")
+            print(f"Score (bounded): {result.score}")
+        else:
+            print(f"Score: {result.score}")
     else:
         print(f"Message: {result.message}")
 
@@ -317,19 +327,22 @@ def print_result(result: EvaluationResult, quiet: bool = False, verbose: bool = 
     print("=" * 60)
 
 
-def print_results_json(results: List[EvaluationResult]) -> None:
+def print_results_json(results: List[EvaluationResult], unbounded: bool = False) -> None:
     """Print results as JSON."""
     import json
 
     data = []
     for r in results:
-        data.append({
+        item = {
             "problem_id": r.problem_id,
             "score": r.score,
             "status": r.status.value,
             "message": r.message,
             "duration_seconds": r.duration_seconds,
-        })
+        }
+        if unbounded and hasattr(r, 'score_unbounded'):
+            item["score_unbounded"] = r.score_unbounded
+        data.append(item)
     print(json.dumps(data, indent=2))
 
 
@@ -609,18 +622,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         if not args.quiet:
             print(f"Evaluating {pid}...", end=" ", flush=True)
 
-        result = evaluator.evaluate(track, pid, code, timeout=args.timeout)
+        result = evaluator.evaluate(track, pid, code, timeout=args.timeout, unbounded=args.unbounded)
         results.append(result)
 
         if not args.quiet:
             if result.success:
-                print(f"Score: {result.score}")
+                score = result.score_unbounded if args.unbounded and hasattr(result, 'score_unbounded') else result.score
+                print(f"Score: {score}")
             else:
                 print(f"ERROR: {result.message}")
 
     # Output results
     if args.json:
-        print_results_json(results)
+        print_results_json(results, unbounded=args.unbounded)
     elif not args.quiet:
         print(f"\n{'='*60}")
         print("Summary")
@@ -634,8 +648,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Failed: {len(failed)}")
 
         if successful:
-            avg_score = sum(r.score for r in successful) / len(successful)
-            print(f"Average Score: {avg_score:.2f}")
+            if args.unbounded and all(hasattr(r, 'score_unbounded') for r in successful):
+                avg_score = sum(r.score_unbounded for r in successful) / len(successful)
+                print(f"Average Score (unbounded): {avg_score:.2f}")
+            else:
+                avg_score = sum(r.score for r in successful) / len(successful)
+                print(f"Average Score: {avg_score:.2f}")
 
         if failed and args.verbose:
             print("\nFailed problems:")
