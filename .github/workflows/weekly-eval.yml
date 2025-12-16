@@ -27,15 +27,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+        run: uv python install 3.10
 
       - name: Install dependencies
         run: |
-          pip install -e .
-          pip install skypilot[gcp]
+          uv sync
+          uv pip install skypilot[gcp]
 
       - name: Set up GCP credentials
         run: |
@@ -65,7 +66,7 @@ jobs:
       - name: Generate pairs file (incremental)
         run: |
           # Get list of already evaluated pairs from results
-          python -c "
+          uv run python -c "
           import json
           from pathlib import Path
 
@@ -115,7 +116,7 @@ jobs:
 
           MAX_CONCURRENT="${{ github.event.inputs.max_concurrent || '4' }}"
 
-          frontier-eval batch \
+          uv run frontier-eval batch \
             --pairs-file pairs_to_eval.txt \
             --skypilot \
             --max-concurrent $MAX_CONCURRENT \
