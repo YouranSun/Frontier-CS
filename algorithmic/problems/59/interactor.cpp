@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     cout << n << endl;
     cout.flush();
 
-    // === Éú³É·ûºÏÌâÒâµÄÊý×é ===
+    // === ï¿½ï¿½ï¿½É·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ===
     vector<int> a(n);
     iota(a.begin(), a.end(), 1);
     for (int i = 0; i < n; i++) {
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     while (true) {
     	string cmd;
         try {
-            cmd = ouf.readWord();  // ? ¸Ä³É readWord()
+            cmd = ouf.readWord();  // ? ï¿½Ä³ï¿½ readWord()
         } catch (...) {
             quitf(_fail, "Unexpected EOF or invalid token while reading command.");
         }
@@ -58,17 +58,18 @@ int main(int argc, char* argv[]) {
             if (b != a)
                 quitf(_wa, "Wrong final array.");
 
-            // === Æ½»¬´ò·Ö²¿·Ö ===
-            // 0 ¡Ü queries ¡Ü limit
+            // === Æ½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ ===
+            // 0 ï¿½ï¿½ queries ï¿½ï¿½ limit
             // queries=0 -> 1.0, queries=limit -> 0.8
             double ratio = 0.8 + 0.2 * (1.0 - (double)queries / limit);
+            double ratio_unbounded = 0.8 * limit / query;
             ratio = max(0.2, min(1.0, ratio));
 
-            double score = ratio * 100.0;
+            double score = ratio * 100.0, score_unbounded = ratio_unbounded * 100.0;
 
             string msg = format(
-                "Correct! Queries = %d (limit = %d). Ratio: %.6f (Score: %.2f)",
-                queries, limit, ratio, score);
+                "Correct! Queries = %d (limit = %d). Ratio: %.6f (Score: %.2f). RatioUnbounded: %.6f (ScoreUnbounded: %.2f)",
+                queries, limit, ratio, score, ratio_unbounded, score_unbounded);
 
             quitp(ratio, msg.c_str());
         }

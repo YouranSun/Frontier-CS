@@ -12,21 +12,27 @@ int main(int argc, char * argv[])
     int n = 0;
     string firstElems;
 
+	double total_ratio = 0;
+	double total_unbounded_ratio = 0;
+
     while (!ans.seekEof() && !ouf.seekEof())
     {
         n++;
         long long j = ans.readLong();
         long long p = ouf.readLong();
-        if (j != p)
+        if (p < j)
             quitf(_wa, "%d%s numbers differ - expected: '%s', found: '%s'", n, englishEnding(n).c_str(), vtos(j).c_str(), vtos(p).c_str());
-        else
-            if (n <= 5)
-            {
-                if (firstElems.length() > 0)
-                    firstElems += " ";
-                firstElems += vtos(j);
-            }
+        double ratio = min(1.0, p / j * 0.8);
+        double unbounded_ratio = p / j * 0.8;
+        
+        total_ratio += ratio;
+        total_unbounded_ratio += unbounded_ratio;
     }
+    
+    total_ratio /= n;
+    total_unbounded_ratio /= n;
+    double score = total_ratio * 100;
+    double unbounded_score = total_unbounded_ratio * 100;
 
     int extraInAnsCount = 0;
 
@@ -50,8 +56,9 @@ int main(int argc, char * argv[])
     if (extraInOufCount > 0)
         quitf(_wa, "Output contains longer sequence [length = %d], but answer contains %d elements", n + extraInOufCount, n);
     
-    if (n <= 5)
-        quitf(_ok, "%d number(s): \"%s\"", n, compress(firstElems).c_str());
-    else
-        quitf(_ok, "%d numbers", n);
+    string msg = format(
+                "Correct! Queries = %d (limit = %d). Ratio: %.6f (Score: %.2f). RatioUnbounded: %.6f (ScoreUnbounded: %.2f)",
+                queries, limit, total_ratio, score, total_unbounded_ratio, unbounded_score);
+
+    quitp(total_ratio, msg.c_str());
 }
