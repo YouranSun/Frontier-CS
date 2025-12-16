@@ -315,7 +315,7 @@ class SkyPilotRunner(Runner):
         parts = problem_id.split("/")
         for i in range(1, len(parts)):
             parent = "/".join(parts[:i])
-            common_dir = self.research_dir / parent / "common"
+            common_dir = self.research_dir / "problems" / parent / "common"
             if common_dir.is_dir():
                 mounts[f"{remote_base}/research/{parent}/common"] = str(common_dir.resolve())
 
