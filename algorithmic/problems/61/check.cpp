@@ -57,8 +57,8 @@ int main(int argc, char * argv[])
         quitf(_wa, "Output contains longer sequence [length = %d], but answer contains %d elements", n + extraInOufCount, n);
     
     string msg = format(
-                "Correct! (limit = %d). Ratio: %.6f (Score: %.2f). RatioUnbounded: %.6f (ScoreUnbounded: %.2f)",
-                limit, total_ratio, score, total_unbounded_ratio, unbounded_score);
+                "Correct! Ratio: %.6f (Score: %.2f). RatioUnbounded: %.6f (ScoreUnbounded: %.2f)",
+                total_ratio, score, total_unbounded_ratio, unbounded_score);
 
     quitp(total_ratio, msg.c_str());
 }
